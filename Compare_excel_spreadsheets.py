@@ -22,9 +22,10 @@ def sheets_read():
     Parameters
     ----------
     Nothing , no input
+    
     Returns
     -------
-    df_1,df_2: returns the dfs that are read from the excel files 
+    df_1,df_2: returns the dfs that are read from the excel files and also their names
         
     """
     name_1=r"E:\stkro\Documents\Tarefas.xlsx"
@@ -40,8 +41,10 @@ def NanToNone(df_1,df_2):
     ----------
     df_1,df_2: Dataframes are from the excel
     -------
+    Returns
     df_1,df_2: returns the dfs that are read from the excel files and have the same sizes with all the NaN values transformed to None
         
+    
     """
     #based on https://stackoverflow.com/questions/14162723/replacing-pandas-or-numpy-nan-with-a-none-to-use-with-mysqldb
     #The ideia here is to replace witha  constant (None - string, as the value None is interpreted by pandas as NaN)
@@ -73,12 +76,20 @@ def NanToNone(df_1,df_2):
     return df_1,df_2
 
 def Compare(df_1,df_2):
+    """
+    Parameters
+    ----------
+    df_1,df_2: Dataframes of same size
+    -------
     
+    Returns
+    df_index: df with the 'adress' of the cells that are different on the 2 spreadsheets
+    
+    """
     #take the mask of the Null Values
     #if those mask are the same the same, we have the same values for None on the two columns. 
     
     Equity=(df_1!=df_2)
-    
     
     columns=Equity.columns
     row=[]
@@ -123,16 +134,27 @@ def ColorSpreadsheet(df,name_1,name_2):
     #print(workbook1)
     workbook1.save(name_1)
     workbook2.save(name_2)
-    
+
+def FormatCell(df):
+    #https://stackoverflow.com/questions/47179026/convert-number-to-alphabet-that-corresponds-to-excel-column-alphabet
+    alphabet=[]
+    for i in range(len(df)):
+        letter=xlsxwriter.utility.xl_col_to_name(df['Col'].iloc[i]-1)
+        adress=letter+str(df['Row'].iloc[i])
+        alphabet.append(adress)
+    df['Cell']=alphabet
+    return df
 
 def main():
     a,b,name_1,name_2=sheets_read()
     c,d=NanToNone(a,b)
     df=Compare(c,d)
     ColorSpreadsheet(df,name_1,name_2)
-    print(df)
-    df.to_excel("Index_and_Rows_of_difference.xlsx")
-    return df
+    #print(df)
+    cell_names=FormatCell(df)
+    cell_names.to_excel("Index_and_Rows_of_difference.xlsx")
+    print(cell_names)
+    return cell_names
 
 if __name__ == '__main__':
      main()
